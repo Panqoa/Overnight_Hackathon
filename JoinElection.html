@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Election Polling</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(to right, #ffefba, #ffffff);
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: auto;
+        }
+        .left {
+            flex: 1;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-right: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        .right {
+            flex: 1;
+            padding: 20px;
+            background-color: #fff;
+            display: none;
+            box-sizing: border-box;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            font-weight: bold;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            margin: 10px 0;
+        }
+        a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .vote-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .vote-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .vote-buttons button:hover {
+            background-color: #0056b3;
+        }
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .results-link {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+    <script>
+        const voters = {};
+        const voteCounts = JSON.parse(localStorage.getItem('voteCounts')) || {};
+        let currentElection = "";
+
+        function showElectionForm(election) {
+            currentElection = election;
+            document.querySelector('.right').style.display = 'block';
+            document.getElementById('election-title').textContent = election;
+            document.getElementById('posts').innerHTML = getPosts(election);
+        }
+
+        function getPosts(election) {
+            const elections = {
+                "Presidential Election": [
+                    { post: "President", candidates: ["Alice", "Bob"] },
+                    { post: "Vice President", candidates: ["Charlie", "David"] }
+                ],
+                "Gubernatorial Race": [
+                    { post: "Governor", candidates: ["Eve", "Frank"] },
+                    { post: "Senator", candidates: ["Grace", "Heidi"] }
+                ],
+                "City Mayoral Vote": [
+                    { post: "Mayor", candidates: ["Ivan", "Judy"] },
+                    { post: "Council Member", candidates: ["Ken", "Laura"] }
+                ],
+                "National Assembly Election": [
+                    { post: "Prime Minister", candidates: ["Mallory", "Nathan"] },
+                    { post: "Deputy Minister", candidates: ["Olivia", "Peggy"] }
+                ]
+            };
+            let html = '';
+            elections[election].forEach(({ post, candidates }) => {
+                html += `<h3>${post}</h3>`;
+                candidates.forEach(candidate => {
+                    html += `<div class="vote-buttons"><button onclick="submitVote('${post}', '${candidate}')">Vote for ${candidate}</button></div>`;
+                });
+            });
+            return html;
+        }
+
+        function submitVote(post, candidate) {
+            const aadhaar = document.getElementById('aadhaar').value;
+            const message = document.getElementById('message');
+
+            if (!aadhaar) {
+                message.textContent = "Please enter your Aadhaar number.";
+                return;
+            }
+
+            if (voters[aadhaar] && voters[aadhaar][currentElection]) {
+                message.textContent = "You have already voted in this election.";
+            } else {
+                if (!voters[aadhaar]) {
+                    voters[aadhaar] = {};
+                }
+                if (!voters[aadhaar][currentElection]) {
+                    voters[aadhaar][currentElection] = {};
+                }
+                voters[aadhaar][currentElection][post] = candidate;
+
+                if (!voteCounts[currentElection]) {
+                    voteCounts[currentElection] = {};
+                }
+                if (!voteCounts[currentElection][post]) {
+                    voteCounts[currentElection][post] = {};
+                }
+                if (!voteCounts[currentElection][post][candidate]) {
+                    voteCounts[currentElection][post][candidate] = 0;
+                }
+                voteCounts[currentElection][post][candidate] += 1;
+
+                message.textContent = `Your vote for ${post} (${candidate}) has been recorded. Thank you!`;
+                localStorage.setItem('voteCounts', JSON.stringify(voteCounts));
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="left">
+            <h2>Choose the election to vote in</h2>
+            <ul>
+                <li><a href="javascript:void(0)" onclick="showElectionForm('Presidential Election')">Presidential Election</a></li>
+                <li><a href="javascript:void(0)" onclick="showElectionForm('Gubernatorial Race')">Gubernatorial Race</a></li>
+                <li><a href="javascript:void(0)" onclick="showElectionForm('City Mayoral Vote')">City Mayoral Vote</a></li>
+                <li><a href="javascript:void(0)" onclick="showElectionForm('National Assembly Election')">National Assembly Election</a></li>
+            </ul>
+            <div class="results-link">
+                <a href="admin-login.html">View Results</a>
+            </div>
+        </div>
+        <div class="right">
+            <h2 id="election-title"></h2>
+            <input type="text" id="aadhaar" class="input-field" placeholder="Enter Aadhaar number" required>
+            <div id="posts"></div>
+        </div>
+    </div>
+    <p id="message" style="text-align:center; color: #333; font-weight: bold;"></p>
+</body>
+</html>
